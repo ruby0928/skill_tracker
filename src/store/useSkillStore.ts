@@ -18,6 +18,7 @@ interface SkillStore {
   pauseTimer: () => void;
   resumeTimer: () => void;
   stopTimer: () => void;
+  addManualSession: (skillId: string, startedAt: string, endedAt: string, minutes: number) => void;
 }
 
 const getTotalMs = (timer: TimerState): number =>
@@ -39,7 +40,7 @@ export const useSkillStore = create<SkillStore>()(
               name,
               icon,
               totalMinutes: 0,
-              logs: [],
+              history: [],
               createdAt: new Date().toISOString(),
             },
           ],
@@ -93,7 +94,7 @@ export const useSkillStore = create<SkillStore>()(
           // Discard sessions shorter than 1 minute
           if (minutes < 1) return { timer: DEFAULT_TIMER };
 
-          const log = {
+          const session = {
             id: crypto.randomUUID(),
             startedAt: new Date(now - totalMs).toISOString(),
             endedAt: new Date(now).toISOString(),
@@ -103,15 +104,31 @@ export const useSkillStore = create<SkillStore>()(
           return {
             skills: skills.map((sk) =>
               sk.id === activeSkillId
-                ? { ...sk, totalMinutes: sk.totalMinutes + minutes, logs: [log, ...sk.logs] }
+                ? { ...sk, totalMinutes: sk.totalMinutes + minutes, history: [session, ...sk.history] }
                 : sk
             ),
             timer: DEFAULT_TIMER,
           };
         }),
+
+      addManualSession: (skillId, startedAt, endedAt, minutes) =>
+        set((s) => ({
+          skills: s.skills.map((sk) =>
+            sk.id === skillId
+              ? {
+                  ...sk,
+                  totalMinutes: sk.totalMinutes + minutes,
+                  history: [
+                    { id: crypto.randomUUID(), startedAt, endedAt, minutes },
+                    ...sk.history,
+                  ],
+                }
+              : sk
+          ),
+        })),
     }),
     {
-      name: 'skill-tracker-v1',
+      name: 'skill-tracker-v2',
       storage: createJSONStorage(() => localStorage),
     }
   )

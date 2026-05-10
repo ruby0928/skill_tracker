@@ -1,4 +1,4 @@
-export interface SkillLog {
+export interface Session {
   id: string;
   startedAt: string;
   endedAt: string;
@@ -10,7 +10,7 @@ export interface Skill {
   name: string;
   icon: string;
   totalMinutes: number;
-  logs: SkillLog[];
+  history: Session[];
   createdAt: string;
 }
 
