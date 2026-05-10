@@ -1,10 +1,11 @@
 interface Props {
-  level: number;    // 0–10
-  progress: number; // 0–1, progress toward the next level
+  level: number;    // 0–10  filled tier segments (each segment = 10 levels)
+  progress: number; // 0–1   fractional fill of the current segment
   isActive: boolean;
 }
 
-// The iconic Sims-style 10-segment skill bar
+// Sims-style 10-segment bar. Each segment represents one tier (10 levels).
+// Segment 10 filled = Level 100 (10,000 h — the legend cap).
 const SkillLevelBar = ({ level, progress, isActive }: Props) => (
   <div className="relative">
     <div className="flex gap-1">

@@ -3,6 +3,7 @@ import { useSkillStore } from '../store/useSkillStore';
 import SkillCard from './SkillCard';
 import AddSkillModal from './AddSkillModal';
 import ActiveTimerBar from './ActiveTimerBar';
+import DevPanel from './DevPanel';
 
 const EmptyState = () => (
   <div className="col-span-full flex flex-col items-center justify-center py-28 text-gray-600">
@@ -43,6 +44,7 @@ const Dashboard = () => {
       </main>
 
       {showModal && <AddSkillModal onClose={() => setShowModal(false)} />}
+      <DevPanel />
     </div>
   );
 };

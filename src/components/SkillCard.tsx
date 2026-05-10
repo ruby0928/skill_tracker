@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useSkillStore } from '../store/useSkillStore';
 import { useElapsedTime } from '../hooks/useElapsedTime';
-import { getLevel, getLevelProgress, formatMinutes, formatElapsedMs } from '../utils/skillLevel';
+import { getLevel, getLevelName, getTierInfo, formatMinutes, formatElapsedMs } from '../utils/skillLevel';
 import SkillLevelBar from './SkillLevelBar';
 import HourRing from './HourRing';
 import ManualEntryModal from './ManualEntryModal';
@@ -20,10 +20,12 @@ const SkillCard = ({ skill }: Props) => {
 
   const elapsedMs = useElapsedTime(isThisSkillActive);
 
-  // Include live session progress so the ring and bar update in real time
+  // Include live session progress so all displays update in real time
   const displayMinutes = skill.totalMinutes + Math.floor(elapsedMs / 60000);
   const level = getLevel(displayMinutes);
-  const progress = getLevelProgress(displayMinutes);
+  const levelName = getLevelName(level);
+  const { filledTiers, tierProgress } = getTierInfo(displayMinutes);
+  const isMaxLevel = level >= 100;
 
   const handleToggle = () => {
     if (isThisSkillActive) {
@@ -54,28 +56,43 @@ const SkillCard = ({ skill }: Props) => {
           </button>
         )}
 
-        {/* Header */}
+        {/* Header: icon + name + level badge */}
         <div className="flex items-start gap-3">
           <span className="text-3xl leading-none mt-0.5">{skill.icon}</span>
           <div className="flex-1 min-w-0">
             <h2 className="font-bold text-lg leading-tight truncate">{skill.name}</h2>
-            <p className="text-xs text-gray-400 mt-0.5">
-              Level <span className="text-green-400 font-semibold">{level}</span>
-              {level < 10 && <span className="text-gray-600"> / 10</span>}
-              {level === 10 && <span className="text-yellow-400 ml-1">★ MAX</span>}
-            </p>
+            <div className="flex items-baseline gap-2 mt-0.5 flex-wrap">
+              <span className="text-sm font-mono text-green-400 font-semibold">
+                Lv.{level}
+              </span>
+              <span
+                className={`text-xs font-medium px-1.5 py-0.5 rounded ${
+                  isMaxLevel
+                    ? 'bg-yellow-500/20 text-yellow-300'
+                    : 'bg-gray-800 text-gray-400'
+                }`}
+              >
+                {levelName}
+              </span>
+              {!isMaxLevel && (
+                <span className="text-xs text-gray-600">/ 100</span>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Ring + level bar */}
+        {/* HourRing + level bar + time */}
         <div className="flex items-center gap-4">
           <HourRing totalMinutes={displayMinutes} isActive={isThisSkillActive && timer.isRunning} />
           <div className="flex-1 flex flex-col gap-2">
-            <SkillLevelBar
-              level={level}
-              progress={progress}
-              isActive={isThisSkillActive && timer.isRunning}
-            />
+            <div>
+              <p className="text-xs text-gray-600 mb-1">階段進度（每段 10 Lv）</p>
+              <SkillLevelBar
+                level={filledTiers}
+                progress={tierProgress}
+                isActive={isThisSkillActive && timer.isRunning}
+              />
+            </div>
             <div>
               <p className="text-xs text-gray-500">累計時間</p>
               <p className="font-mono font-semibold">{formatMinutes(skill.totalMinutes)}</p>

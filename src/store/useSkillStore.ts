@@ -19,6 +19,8 @@ interface SkillStore {
   resumeTimer: () => void;
   stopTimer: () => void;
   addManualSession: (skillId: string, startedAt: string, endedAt: string, minutes: number) => void;
+  addMinutesToSkill: (skillId: string, minutes: number) => void;
+  clearAll: () => void;
 }
 
 const getTotalMs = (timer: TimerState): number =>
@@ -126,6 +128,29 @@ export const useSkillStore = create<SkillStore>()(
               : sk
           ),
         })),
+
+      addMinutesToSkill: (skillId, minutes) =>
+        set((s) => ({
+          skills: s.skills.map((sk) =>
+            sk.id === skillId
+              ? {
+                  ...sk,
+                  totalMinutes: sk.totalMinutes + minutes,
+                  history: [
+                    {
+                      id: crypto.randomUUID(),
+                      startedAt: new Date(Date.now() - minutes * 60000).toISOString(),
+                      endedAt: new Date().toISOString(),
+                      minutes,
+                    },
+                    ...sk.history,
+                  ],
+                }
+              : sk
+          ),
+        })),
+
+      clearAll: () => set({ skills: [], timer: DEFAULT_TIMER }),
     }),
     {
       name: 'skill-tracker-v2',
